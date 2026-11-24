@@ -25,10 +25,12 @@
     };
 
     # Keychron's QMK fork carries the HE (analog matrix), wireless and RGB
-    # drivers for the K6 HE. The submodules (Keychron's ChibiOS fork, printf,
-    # etc.) are fetched with the input so the firmware build is pure.
+    # drivers for the K6 HE. The input is pinned by revision only; the
+    # submodules are fetched in the firmware derivation as a fixed-output
+    # source, so the flake input's NAR hash does not depend on the Nix
+    # version used to lock it.
     keychron-qmk = {
-      url = "git+https://github.com/Keychron/qmk_firmware?ref=2025q3&submodules=1";
+      url = "github:Keychron/qmk_firmware/2025q3";
       flake = false;
     };
 
@@ -71,7 +73,7 @@
         };
 
         k6he = import ./keyboards/k6he/keyboard.nix {
-          inherit keychron-qmk mkQmkFirmware;
+          inherit pkgs keychron-qmk mkQmkFirmware;
         };
 
         flashK6he = pkgs.writeShellApplication {

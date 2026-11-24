@@ -22,19 +22,17 @@
       "flake": false,
       "locked": {
         "lastModified": 1793343573,
-        "narHash": "sha256-lIAOZp0JOd6ZqCU2Irzbp38ZIb6L3b5XrfiOalUeQOI=",
-        "ref": "2025q3",
+        "narHash": "sha256-3FNrzHlmmCBNdWWKZ+lUGs2ndqiFH1x1/HZjrJuMWqY=",
+        "owner": "Keychron",
+        "repo": "qmk_firmware",
         "rev": "57e682caa0a821e6de1b589e6f983f266151ab02",
-        "revCount": 29172,
-        "submodules": true,
-        "type": "git",
-        "url": "https://github.com/Keychron/qmk_firmware"
+        "type": "github"
       },
       "original": {
+        "owner": "Keychron",
         "ref": "2025q3",
-        "submodules": true,
-        "type": "git",
-        "url": "https://github.com/Keychron/qmk_firmware"
+        "repo": "qmk_firmware",
+        "type": "github"
       }
     },
     "nixos-unstable": {
