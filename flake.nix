@@ -118,7 +118,7 @@
               exit 1
             fi
 
-            mapfile -t devices < <(dfu-util -l 2>/dev/null | grep -E '0483:df11' || true)
+            mapfile -t devices < <(dfu-util -l 2>/dev/null | grep -E '0483:df11' | grep -o 'serial="[^"]*"' | sort -u)
             if [ "''${#devices[@]}" -ne 1 ]; then
               echo "expected exactly one STM32 DFU device (0483:df11), found ''${#devices[@]}" >&2
               dfu-util -l >&2 || true
