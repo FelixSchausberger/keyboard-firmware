@@ -1,5 +1,5 @@
 {
-  description = "Corne V4.1 Vial-QMK Firmware Builder";
+  description = "Keyboard firmware: Keychron K6 HE and Corne V4.1";
 
   # Nix configuration for public caches (avoids requiring personal cachix credentials)
   nixConfig = {
@@ -20,26 +20,33 @@
     # The vial fork of qmk, stores the keyboard config in on-keyboard memory, and
     # supports the `Vial` GUI key map config app.
     vial-qmk = {
-      url = "https://github.com/vial-kb/vial-qmk/archive/vial.tar.gz";
+      url = "github:vial-kb/vial-qmk/vial";
+      flake = false;
+    };
+
+    # Keychron's QMK fork carries the HE (analog matrix), wireless and RGB
+    # drivers for the K6 HE. The submodules (Keychron's ChibiOS fork, printf,
+    # etc.) are fetched with the input so the firmware build is pure.
+    keychron-qmk = {
+      url = "git+https://github.com/Keychron/qmk_firmware?ref=2025q3&submodules=1";
       flake = false;
     };
 
     flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs =
-    {
-      nixpkgs,
-      nixos-unstable,
-      vial-qmk,
-      flake-utils,
-      ...
-    }:
-    # This effectively appends `.x86_64-linux` to the attributes returned
-    # by the function passed in. The `system` parameter is also that string.
-    flake-utils.lib.eachSystem [ "x86_64-linux" "aarch64-linux" ] (
-      system:
-      let
+  outputs = {
+    nixpkgs,
+    nixos-unstable,
+    vial-qmk,
+    keychron-qmk,
+    flake-utils,
+    ...
+  }:
+  # This effectively appends `.x86_64-linux` to the attributes returned
+  # by the function passed in. The `system` parameter is also that string.
+    flake-utils.lib.eachSystem ["x86_64-linux" "aarch64-linux"] (
+      system: let
         pkgs = import nixpkgs {
           inherit system;
           overlays = [
@@ -55,9 +62,71 @@
             })
           ];
         };
-        lib = pkgs.lib;
-      in
-      {
+        inherit (pkgs) lib;
+
+        unstable = nixos-unstable.legacyPackages.${system};
+
+        mkQmkFirmware = pkgs.callPackage ./lib/mkQmkFirmware.nix {
+          inherit (unstable) qmk;
+        };
+
+        k6he = import ./keyboards/k6he/keyboard.nix {
+          inherit keychron-qmk mkQmkFirmware;
+        };
+
+        flashK6he = pkgs.writeShellApplication {
+          name = "flash-k6he";
+          runtimeInputs = with pkgs; [dfu-util coreutils findutils gnugrep];
+          text = ''
+            set -eu
+
+            usage() {
+              cat <<'EOF'
+            Flash a Keychron K6 HE firmware image over STM32 DFU.
+
+            Usage: flash-k6he [--help] [path/to/firmware.bin]
+
+            Without a path, the newest result/*.bin from `nix build .#k6he` is used.
+
+            Bootloader entry:
+              1. Set the mode switch to Cable.
+              2. Disconnect USB-C.
+              3. Hold Esc (or press the reset button under the space bar) and plug
+                 USB-C in. The keyboard enumerates as STM32 DFU (0483:df11).
+
+            The script refuses to run unless exactly one STM32 DFU device is present.
+            It never guesses between multiple boards.
+
+            Rollback: use the firmware update in Keychron Launcher to restore the
+            stock firmware before flashing a custom image.
+            EOF
+            }
+
+            if [ "''${1:-}" = "--help" ] || [ "''${1:-}" = "-h" ]; then
+              usage
+              exit 0
+            fi
+
+            artifact="''${1:-}"
+            if [ -z "$artifact" ]; then
+              artifact="$(find result/ -maxdepth 1 -type f -name '*.bin' -printf '%T@ %p\n' 2>/dev/null | sort -n | tail -n 1 | cut -d' ' -f2- || true)"
+            fi
+            if [ -z "$artifact" ] || [ ! -f "$artifact" ]; then
+              echo "no firmware .bin found; run 'nix build .#k6he' first or pass a path" >&2
+              exit 1
+            fi
+
+            mapfile -t devices < <(dfu-util -l 2>/dev/null | grep -E '0483:df11' || true)
+            if [ "''${#devices[@]}" -ne 1 ]; then
+              echo "expected exactly one STM32 DFU device (0483:df11), found ''${#devices[@]}" >&2
+              dfu-util -l >&2 || true
+              exit 1
+            fi
+
+            dfu-util -d 0483:df11 -a 0 -s 0x08000000:leave -D "$artifact"
+          '';
+        };
+      in {
         # Development shell for building firmware
         devShells.default = pkgs.mkShell {
           # Corne V4.1 specific configuration
@@ -74,8 +143,7 @@
 
           # Build inputs with additional tools
           # Split into CI-required (always) and dev-only (local development)
-          buildInputs =
-            with pkgs;
+          buildInputs = with pkgs;
             [
               # Core firmware build tools (needed in CI)
               cacert # SSL certificates for git operations
@@ -234,6 +302,19 @@
 
         # Formatter for the flake
         formatter = pkgs.alejandra;
+
+        packages = {
+          k6he = k6he.qwerty;
+          k6he-colemak = k6he.colemak;
+          default = k6he.qwerty;
+        };
+
+        apps = {
+          flash-k6he = {
+            type = "app";
+            program = "${flashK6he}/bin/flash-k6he";
+          };
+        };
       }
     );
 }

@@ -1,16 +1,22 @@
-name: Corne Firmware CI/CD
+name: Keyboard Firmware CI/CD
 on:
   push:
     branches: [main]
     paths:
       - "firmware/**"
+      - "keyboards/**"
+      - "lib/**"
       - "flake.nix"
+      - "flake.lock"
       - ".github/workflows/firmware-ci.yml"
   pull_request:
     branches: [main]
     paths:
       - "firmware/**"
+      - "keyboards/**"
+      - "lib/**"
       - "flake.nix"
+      - "flake.lock"
       - ".github/workflows/firmware-ci.yml"
   workflow_dispatch:
 # Permissions for security and artifacts
@@ -58,11 +64,49 @@ jobs:
         uses: cachix/install-nix-action@v26
         with:
           extra_nix_config: ${{ env.NIX_CONFIG }}
+      - name: Cache Nix store
+        uses: nix-community/cache-nix-action@v6
+        with:
+          primary-key: nix-${{ runner.os }}-${{ hashFiles('flake.lock') }}
+          restore-prefixes-first-match: nix-${{ runner.os }}-
       - name: Validate flake
         run: |
           echo "=== Validating Flake Configuration ==="
           nix flake check --no-build
           echo "✅ Flake configuration is valid"
+  # Build Keychron K6 HE firmware
+  build-k6he:
+    name: Build Keychron K6 HE Firmware
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - name: Maximize Nix disk space
+        uses: wimpysworld/nothing-but-nix@main
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install Nix
+        uses: cachix/install-nix-action@v26
+        with:
+          extra_nix_config: ${{ env.NIX_CONFIG }}
+      - name: Cache Nix store
+        uses: nix-community/cache-nix-action@v6
+        with:
+          primary-key: nix-${{ runner.os }}-${{ hashFiles('flake.lock') }}
+          restore-prefixes-first-match: nix-${{ runner.os }}-
+      - name: Build firmware
+        run: |
+          echo "=== Building Keychron K6 HE Firmware ==="
+          nix build .#k6he --print-build-logs
+          ls -lh result/
+      - name: Upload firmware artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: k6he-firmware
+          path: |
+            result/*.bin
+            result/*.hex
+          retention-days: 30
+          if-no-files-found: error
   # Build firmware
   build-firmware:
     name: Build Corne Firmware
@@ -80,6 +124,11 @@ jobs:
         uses: cachix/install-nix-action@v26
         with:
           extra_nix_config: ${{ env.NIX_CONFIG }}
+      - name: Cache Nix store
+        uses: nix-community/cache-nix-action@v6
+        with:
+          primary-key: nix-${{ runner.os }}-${{ hashFiles('flake.lock') }}
+          restore-prefixes-first-match: nix-${{ runner.os }}-
       - name: Setup Cachix
         uses: cachix/cachix-action@v14
         if: env.CACHIX_AUTH_TOKEN != ''

@@ -1,10 +1,23 @@
-# Custom Keyboard Configuration: Corne V4.1 Colemak-DH (EurKey)
+# Keyboard Firmware: Keychron K6 HE and Corne V4.1
 
-## Overview
+## Keychron K6 HE
 
-This repository documents my journey into ergonomic typing with a [Corne V4.1 (46 keys)](https://github.com/foostan/crkbd/)
-split keyboard. It's a personal project focused on optimizing typing efficiency and comfort using modern tooling and
-reproducible development environments.
+The K6 HE is a 65% Hall-effect keyboard. Its firmware comes from Keychron's QMK fork, pinned to the `2025q3` branch with
+submodules, because the HE analog matrix, wireless and RGB drivers are not in upstream QMK.
+
+```bash
+nix build .#k6he                                  # QWERTY, default
+nix build .#k6he-colemak                          # Colemak-DH letters
+nix run .#flash-k6he -- ./result/keychron_k6_he_ansi_qwerty.bin
+```
+
+See [keyboards/k6he/README.md](keyboards/k6he/README.md) for bootloader entry, EEPROM and HE calibration, wireless
+pairing and rollback.
+
+## Corne V4.1 (historical)
+
+This repository started as a [Corne V4.1 (46 keys)](https://github.com/foostan/crkbd/) split keyboard configuration and
+keeps those files as a reference.
 
 ### Configuration Details
 
@@ -26,6 +39,13 @@ The layout visualization below is **automatically updated** from the main branch
 
 ```text
 .
+├── keyboards/
+│   ├── k6he/                           # Keychron K6 HE firmware
+│   │   ├── keyboard.nix                # package definitions
+│   │   ├── keymaps/{qwerty,colemak}/   # keymaps
+│   │   └── README.md                   # build, flash, EEPROM, rollback
+│   └── crkbd/keymaps/custom_hrmods/    # Corne V4.1 Vial keymap
+├── lib/mkQmkFirmware.nix               # generic QMK firmware builder
 ├── firmware/                           # Keyboard firmware and configuration files
 │   ├── corne_v4-1_46_keebart_vial.uf2  # VIAL firmware binary for flashing
 │   ├── corne_v4-1_default.vil          # Standard VIAL layout
@@ -567,12 +587,14 @@ This project builds upon excellent work from the keyboard community:
 ## Key Features
 
 - **Home Row Modifiers**: Enhanced ergonomic layout with mod-tap functionality
+
   - Available in `corne_v4-1_custom_hrmods.vil`
   - Tap for letters, hold for modifiers (GUI/Alt/Ctrl/Shift)
   - Significantly reduces finger travel and improves ergonomics
   - A(GUI), R(Alt), S(Ctrl), T(Shift) | N(Shift), E(Ctrl), I(Alt), O(GUI)
 
 - **Modern Tool Integration**: Rust-based tools for efficient workflows
+
   - wayshot + slurp for fast Wayland screenshots
   - satty for screenshot annotation
   - vigiland for simple idle management

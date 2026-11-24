@@ -18,6 +18,25 @@
         "type": "github"
       }
     },
+    "keychron-qmk": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1793343573,
+        "narHash": "sha256-lIAOZp0JOd6ZqCU2Irzbp38ZIb6L3b5XrfiOalUeQOI=",
+        "ref": "2025q3",
+        "rev": "57e682caa0a821e6de1b589e6f983f266151ab02",
+        "revCount": 29172,
+        "submodules": true,
+        "type": "git",
+        "url": "https://github.com/Keychron/qmk_firmware"
+      },
+      "original": {
+        "ref": "2025q3",
+        "submodules": true,
+        "type": "git",
+        "url": "https://github.com/Keychron/qmk_firmware"
+      }
+    },
     "nixos-unstable": {
       "locked": {
         "lastModified": 1778443072,
@@ -53,6 +72,7 @@
     "root": {
       "inputs": {
         "flake-utils": "flake-utils",
+        "keychron-qmk": "keychron-qmk",
         "nixos-unstable": "nixos-unstable",
         "nixpkgs": "nixpkgs",
         "vial-qmk": "vial-qmk"
@@ -76,14 +96,18 @@
     "vial-qmk": {
       "flake": false,
       "locked": {
-        "lastModified": 1777267035,
-        "narHash": "sha256-66s33NfhLLBDsLVgtqr3tqQtUStyWRsOf+vp2guifc8=",
-        "type": "tarball",
-        "url": "https://github.com/vial-kb/vial-qmk/archive/vial.tar.gz"
+        "lastModified": 1785107739,
+        "narHash": "sha256-CFsxsPx9fVK3lsHPUbEOne7KO3SOOtWiXSXUJf4g/8I=",
+        "owner": "vial-kb",
+        "repo": "vial-qmk",
+        "rev": "dd43959ae5c08d8a28d38a1acf7b04e86b14a344",
+        "type": "github"
       },
       "original": {
-        "type": "tarball",
-        "url": "https://github.com/vial-kb/vial-qmk/archive/vial.tar.gz"
+        "owner": "vial-kb",
+        "ref": "vial",
+        "repo": "vial-qmk",
+        "type": "github"
       }
     }
   },

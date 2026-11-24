@@ -4,6 +4,28 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository Overview
 
+The repository now primarily builds the **Keychron K6 HE ANSI** firmware. The Corne V4.1 files are kept as a historical
+reference.
+
+### Keychron K6 HE
+
+- Firmware source: `Keychron/qmk_firmware`, branch `2025q3`, as the `keychron-qmk` flake input with submodules
+  included. The HE analog matrix, wireless and RGB drivers are Keychron-only.
+- Packages: `nix build .#k6he` (QWERTY, default) and `nix build .#k6he-colemak` (Colemak-DH letter block, Keychron Fn
+  layers unchanged).
+- Flash: `nix run .#flash-k6he -- ./result/keychron_k6_he_ansi_qwerty.bin` after entering STM32 DFU (Cable mode, hold
+  Esc or the reset button under the space bar, plug USB-C in).
+- Builder: `lib/mkQmkFirmware.nix` copies the pinned QMK tree, injects `keyboards/k6he/keymaps/<name>` at
+  `keyboards/keychron/k6_he/ansi/keymaps/<name>`, and runs `make` with `BUILD_DIR` outside the source tree.
+- Keymaps: `keyboards/k6he/keymaps/{qwerty,colemak}/keymap.c`. `FN2 + Enter` is `QK_BOOT`; `FN2 + Home` is `EE_CLR`.
+- EEPROM: the compiled keymap is only the default. VIA and Keychron Launcher keep the live keymap in EEPROM, so a
+  firmware flash does not change the layout until `EE_CLR` is pressed. `EE_CLR` also wipes HE calibration and Bluetooth
+  pairing; back up the Launcher settings and verify the stock-firmware rollback before flashing.
+- Tooling: VIA and Keychron Launcher, not Vial. The official Keychron tree has no Vial keymap.
+- Details: `keyboards/k6he/README.md`.
+
+### Corne V4.1 (historical)
+
 This is a **custom keyboard configuration repository** for a Corne V4.1 split keyboard (46 keys), not a traditional
 software development project. The repository contains firmware files, keyboard layout configurations, documentation,
 and a complete development environment for a personal ergonomic typing setup using:
