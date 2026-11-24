@@ -5,7 +5,7 @@ edition = "2021"
 authors = ["Felix Schausberger"]
 description = "Convert VIAL .vil keyboard layout files to QMK keymap.json format"
 license = "MIT"
-repository = "https://github.com/schausberger/corne-colemak-dh-eurkey"
+repository = "https://github.com/FelixSchausberger/keyboard-firmware"
 
 [dependencies]
 clap = { version = "4.5", features = ["derive"] }

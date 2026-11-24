@@ -31,7 +31,7 @@ keeps those files as a reference.
 
 The layout visualization below is **automatically updated** from the main branch. It always shows the latest version of the `corne_v4-1_custom_hrmods.vil` layout (Colemak-DH with home row modifiers):
 
-![Keyboard Layout](https://raw.githubusercontent.com/FelixSchausberger/corne-colemak-dh-eurkey/main/images/generated/corne_v4-1_custom_hrmods.svg?sanitize=true)
+![Keyboard Layout](https://raw.githubusercontent.com/FelixSchausberger/keyboard-firmware/main/images/generated/corne_v4-1_custom_hrmods.svg?sanitize=true)
 
 > **Note**: Images are automatically generated via GitHub Actions when YAML layout files are updated. See the [Layout Visualization](#layout-visualization--image-generation) section for details.
 
